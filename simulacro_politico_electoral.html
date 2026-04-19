@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Simulacro INE – Conocimientos Político-Electorales</title>
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Segoe UI',sans-serif; background:#f5f0ff; color:#222; min-height:100dvh; overflow-x:hidden; }
+
+/* HEADER */
+.header { background:linear-gradient(135deg,#6a1b9a,#ab47bc); color:white; padding:10px 14px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,.2); position:sticky; top:0; z-index:200; }
+.header-logo { font-size:1.35rem; flex-shrink:0; }
+.header-text { flex:1; min-width:0; }
+.header h1 { font-size:.88rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.header p  { font-size:.62rem; opacity:.82; margin-top:1px; }
+.header-right { flex-shrink:0; text-align:right; }
+.timer { font-size:1.45rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.5px; line-height:1; }
+.t-lbl { font-size:.55rem; opacity:.65; margin-top:1px; }
+.timer.warning { color:#ffe082; }
+.timer.danger  { color:#ff6b6b; animation:pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.45} }
+.progress-wrap { background:#e1bee7; height:3px; }
+.progress-bar  { height:3px; background:#fff; transition:width .4s; }
+
+/* MAIN */
+.main { padding:12px 12px 80px; max-width:600px; margin:0 auto; }
+
+/* START */
+.start-screen { background:white; border-radius:14px; padding:22px 16px; box-shadow:0 2px 12px rgba(0,0,0,.08); margin-top:14px; text-align:center; }
+.start-screen h2 { font-size:1.3rem; color:#6a1b9a; margin-bottom:10px; }
+.info-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:16px 0; }
+.info-card { background:#f3e5f5; border-radius:10px; padding:11px 8px; }
+.info-card .num { font-size:1.5rem; font-weight:800; color:#6a1b9a; }
+.info-card .lbl { font-size:.72rem; color:#666; margin-top:2px; }
+.topic-section { text-align:left; margin:14px 0; }
+.topic-section-title { font-size:.72rem; font-weight:800; color:#6a1b9a; text-transform:uppercase; letter-spacing:.5px; margin-bottom:7px; padding-left:3px; }
+.topic-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px; }
+.topic-pill { background:#f3e5f5; border-radius:7px; padding:6px 10px; font-size:.76rem; color:#6a1b9a; display:flex; justify-content:space-between; }
+.topic-pill .cnt { font-weight:800; }
+.biblio-note { font-size:.68rem; color:#888; background:#f9f5ff; border-radius:8px; padding:9px 11px; margin:10px 0 13px; text-align:left; line-height:1.6; border-left:3px solid #ab47bc; }
+.biblio-note strong { color:#6a1b9a; }
+
+/* QUESTION CARD */
+.question-card { background:white; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; margin-bottom:12px; }
+.q-header { background:#6a1b9a; color:white; padding:10px 14px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.q-num-label { font-size:.8rem; font-weight:700; letter-spacing:.3px; }
+.q-area-badge { font-size:.65rem; font-weight:700; padding:4px 9px; border-radius:20px; background:rgba(255,255,255,.22); text-transform:uppercase; white-space:nowrap; flex-shrink:0; }
+.q-body { padding:14px 13px; }
+
+/* PASSAGE */
+.passage { background:#f5f0ff; border-left:4px solid #ab47bc; padding:11px 12px; border-radius:0 8px 8px 0; margin-bottom:12px; font-size:.83rem; line-height:1.7; }
+.passage-label { font-size:.65rem; font-weight:700; color:#6a1b9a; text-transform:uppercase; margin-bottom:5px; }
+
+/* QUESTION TEXT */
+.question-text { font-size:.9rem; font-weight:600; line-height:1.55; margin-bottom:14px; color:#1a1a2e; border-bottom:1px dashed #e0e0e0; padding-bottom:13px; }
+
+/* OPTIONS */
+.options { display:flex; flex-direction:column; gap:0; border:1.5px solid #e0e0e0; border-radius:10px; overflow:hidden; }
+.option { display:flex; align-items:stretch; cursor:pointer; transition:background .13s; font-size:.86rem; line-height:1.45; border-bottom:1px solid #e8e8e8; min-height:52px; }
+.option:last-child { border-bottom:none; }
+.option:active:not(.disabled) { background:#f3e5f533; }
+.option.selected  { background:#f3e5f5; }
+.option.correct   { background:#e8f5e9; }
+.option.incorrect { background:#ffebee; }
+.option.disabled  { cursor:default; }
+.opt-letter-col { width:46px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-right:1.5px solid #e0e0e0; background:#fafafa; }
+.option.selected  .opt-letter-col { background:#ab47bc; border-right-color:#6a1b9a; }
+.option.correct   .opt-letter-col { background:#4caf50; border-right-color:#388e3c; }
+.option.incorrect .opt-letter-col { background:#f44336; border-right-color:#c62828; }
+.opt-letter { width:26px; height:26px; border-radius:50%; border:2px solid #bbb; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.78rem; color:#555; background:white; }
+.option.selected  .opt-letter { border-color:white; color:#ab47bc; }
+.option.correct   .opt-letter { border-color:white; color:#4caf50; }
+.option.incorrect .opt-letter { border-color:white; color:#f44336; }
+.opt-text { flex:1; padding:13px 12px; color:#333; display:flex; align-items:center; }
+.option.selected  .opt-text { color:#6a1b9a; font-weight:600; }
+.option.correct   .opt-text { color:#2e7d32; font-weight:600; }
+.option.incorrect .opt-text { color:#b71c1c; }
+.opt-result-icon { padding:13px 12px 13px 0; font-size:1rem; display:flex; align-items:center; flex-shrink:0; }
+.biblio-ref { font-size:.62rem; color:#bbb; margin-top:12px; font-style:italic; padding-top:9px; border-top:1px dashed #f0e6ff; }
+
+/* EXPLANATION */
+.explanation { padding:12px 14px; background:#f5f0ff; border-top:2px solid #ab47bc; font-size:.82rem; line-height:1.65; display:none; }
+.explanation.show { display:block; }
+.explanation strong { color:#6a1b9a; }
+
+/* VER SOLUCIÓN */
+.ver-sol-wrap { text-align:center; margin-bottom:10px; }
+.btn-ver-sol { background:white; border:2px solid #ab47bc; color:#6a1b9a; padding:9px 20px; border-radius:9px; font-weight:700; font-size:.83rem; cursor:pointer; transition:all .15s; min-height:44px; }
+.btn-ver-sol:active { background:#f3e5f5; }
+
+/* BUTTONS */
+.btn { padding:10px 18px; border-radius:10px; border:none; font-size:.85rem; font-weight:700; cursor:pointer; transition:all .15s; min-height:44px; }
+.btn:active { transform:scale(.96); }
+.btn-primary   { background:linear-gradient(135deg,#6a1b9a,#ab47bc); color:white; }
+.btn-primary:active   { opacity:.88; }
+.btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+.btn-secondary { background:#f0f0f0; color:#555; }
+.btn-secondary:active { background:#e0e0e0; }
+.btn-lg { padding:13px 26px; font-size:.93rem; border-radius:12px; }
+.btn-sm { padding:9px 15px; font-size:.8rem; min-height:40px; }
+
+/* BOTTOM NAV */
+.nav-bar { position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #e0e0e0; padding:8px 14px; padding-bottom:max(8px,env(safe-area-inset-bottom)); display:flex; justify-content:space-between; align-items:center; gap:8px; box-shadow:0 -2px 10px rgba(0,0,0,.07); z-index:200; }
+.nav-info { font-size:.77rem; color:#888; line-height:1.4; }
+.nav-info span { color:#6a1b9a; font-weight:700; }
+.nav-btns { display:flex; gap:7px; flex-shrink:0; }
+
+/* RESULTS */
+.results-screen { background:white; border-radius:14px; padding:24px 16px; box-shadow:0 2px 12px rgba(0,0,0,.08); margin-top:14px; text-align:center; }
+.score-circle { width:108px; height:108px; border-radius:50%; margin:0 auto 16px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.85rem; font-weight:900; color:white; }
+.score-sub { font-size:.68rem; font-weight:500; opacity:.85; }
+.score-good { background:linear-gradient(135deg,#43a047,#66bb6a); }
+.score-mid  { background:linear-gradient(135deg,#f57c00,#ffa726); }
+.score-low  { background:linear-gradient(135deg,#c62828,#ef5350); }
+.stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:16px 0; }
+.stat-card { background:#f9f9f9; border-radius:10px; padding:11px 8px; }
+.stat-card .n { font-size:1.35rem; font-weight:800; }
+.stat-card .l { font-size:.7rem; color:#888; margin-top:2px; }
+.stat-correct .n { color:#43a047; }
+.stat-wrong .n   { color:#e53935; }
+.stat-skip .n    { color:#888; }
+.area-row { display:flex; align-items:center; gap:9px; margin-bottom:8px; font-size:.81rem; }
+.area-name { flex:1; color:#444; }
+.area-bar-wrap { flex:2; background:#eee; border-radius:4px; height:6px; }
+.area-bar { height:6px; border-radius:4px; }
+.area-pct { width:32px; text-align:right; font-weight:700; font-size:.78rem; }
+.weak-banner { background:linear-gradient(135deg,#6a1b9a,#ab47bc); color:white; border-radius:11px; padding:12px 14px; margin:12px 0; text-align:left; }
+.weak-banner h4 { margin-bottom:4px; font-size:.9rem; }
+.weak-banner p  { font-size:.78rem; opacity:.9; margin-bottom:6px; }
+.weak-tags { display:flex; flex-wrap:wrap; gap:5px; }
+.weak-tag  { background:rgba(255,255,255,.25); border-radius:5px; padding:3px 8px; font-size:.74rem; font-weight:700; }
+.hidden { display:none !important; }
+
+@media(max-width:360px){
+  .topic-grid { grid-template-columns:1fr; }
+  .info-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">🗳️</div>
+  <div class="header-text">
+    <h1>Conocimientos Político-Electorales</h1>
+    <p>Módulo INE-CL-4A · Diagnóstico</p>
+  </div>
+  <div class="header-right">
+    <div class="timer" id="timer">50:00</div>
+    <div class="t-lbl">tiempo restante</div>
+  </div>
+</div>
+<div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+
+<div class="main">
+  <div class="start-screen" id="startScreen">
+    <h2>🗳️ Módulo: Conocimientos Político-Electorales</h2>
+    <p style="background:#f3e5f5;border-radius:10px;padding:10px;color:#6a1b9a;font-weight:600;margin-bottom:14px;font-size:.82rem">🎯 Modo diagnóstico — Al terminar verás qué temas dominas y cuáles reforzar.</p>
+    <div class="info-grid">
+      <div class="info-card"><div class="num">40</div><div class="lbl">Preguntas</div></div>
+      <div class="info-card"><div class="num">50</div><div class="lbl">Minutos</div></div>
+      <div class="info-card"><div class="num">2</div><div class="lbl">Áreas</div></div>
+    </div>
+    <div class="topic-section">
+      <div class="topic-section-title">📜 1. Histórico Conceptual (22 preguntas)</div>
+      <div class="topic-grid">
+        <div class="topic-pill"><span>1.1 Evolución sistema electoral</span><span class="cnt">7</span></div>
+        <div class="topic-pill"><span>1.2 Sistemas políticos</span><span class="cnt">3</span></div>
+        <div class="topic-pill"><span>1.3 Tipos y principios de democracia</span><span class="cnt">6</span></div>
+        <div class="topic-pill"><span>1.4 Cultura democrática</span><span class="cnt">6</span></div>
+      </div>
+      <div class="topic-section-title">⚖️ 2. Teórico Normativo (18 preguntas)</div>
+      <div class="topic-grid">
+        <div class="topic-pill"><span>2.1 Modelo constitucional</span><span class="cnt">6</span></div>
+        <div class="topic-pill"><span>2.2 Leyes y normas electorales</span><span class="cnt">7</span></div>
+        <div class="topic-pill"><span>2.3 Atribuciones de los OPLEs</span><span class="cnt">5</span></div>
+      </div>
+    </div>
+    <div class="biblio-note">
+      📚 <strong>Bibliografía oficial INE:</strong>
+      Woldenberg (2012) · Carpizo (2019) · Espinoza, Cuad. 20 INE · Valdés Zurita, Cuad. 7 INE · Salazar & Woldenberg, Cuad. 1 INE · Silva-Herzog, Cuad. 9 INE · Loaeza, Cuad. 11 INE · Prud'homme, Cuad. 15 INE · Cisneros, Cuad. 10 INE · Crespo, Cuad. 5 INE · INE (2020) Informe País · INEGI ENCUCI (2021) · CPEUM (2025) · LGIPE (2024) · Ugalde Calderón (2010) · Salazar Ugarte (2014) · CNDH (2016)
+    </div>
+    <p style="font-size:.75rem;color:#888;margin-bottom:14px">⚡ El orden de preguntas cambia en cada sesión</p>
+    <button class="btn btn-primary btn-lg" style="width:100%" onclick="startExam()">Comenzar diagnóstico →</button>
+  </div>
+  <div id="examScreen" class="hidden"></div>
+  <div id="resultsScreen" class="hidden"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav-bar hidden" id="navBar">
+  <div class="nav-info">
+    Preg. <span id="navCurrent">1</span> de <span id="navTotal">40</span>
+  </div>
+  <div class="nav-btns">
+    <button class="btn btn-secondary btn-sm" id="btnPrev" onclick="prevQ()">← Ant.</button>
+    <button class="btn btn-primary  btn-sm" id="btnNext" onclick="nextQ()">Sig. →</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   BANCO DE PREGUNTAS — Módulo Conocimientos Político-Electorales
+   Fuentes:
+   [WOLD]  Woldenberg, José (2012). Historia mínima de la transición democrática en México.
+   [CARP]  Carpizo, Jorge (2019). La reforma política mexicana de 1977.
+   [ESP]   Espinoza (2020). Cuaderno de Divulgación N°20 — Sistemas parlamentario, presidencial y semipresidencial.
+   [VALD]  Valdés Zurita (2020). Cuaderno de Divulgación N°7 — Sistemas electorales y de partidos.
+   [SAL1]  Salazar & Woldenberg (2020). Cuaderno de Divulgación N°1 — Principios y valores de la democracia.
+   [SILV]  Silva-Herzog (2020). Cuaderno de Divulgación N°9 — Esferas de la democracia.
+   [LOAE]  Loaeza (2020). Cuaderno de Divulgación N°11 — Oposición y democracia.
+   [PRUD]  Prud'homme (2020). Cuaderno de Divulgación N°15 — Consulta popular y democracia directa.
+   [CIS]   Cisneros (2020). Cuaderno de Divulgación N°10 — Tolerancia y democracia.
+   [CRES]  Crespo (2020). Cuaderno de Divulgación N°5 — Elecciones y democracia.
+   [INF]   INE (2020). Informe País 2020: el curso de la democracia.
+   [ENCI]  INEGI (2021). Encuesta Nacional de Cultura Cívica (ENCUCI) 2020.
+   [CPEUM] Constitución Política de los Estados Unidos Mexicanos (2025).
+   [LGIPE] Ley General de Instituciones y Procedimientos Electorales (2024).
+   [UGAL]  Ugalde Calderón (2010). Órganos constitucionales autónomos.
+   [SALA]  Salazar Ugarte (2014). La reforma constitucional sobre derechos humanos.
+   [CNDH]  CNDH (2016). Principios de universalidad, interdependencia, indivisibilidad y progresividad.
+═══════════════════════════════════════════════════════════════ */
+let Q = [];
+const QBANK = [
+
+  /* ══════════════════════════════════
+     1.1  EVOLUCIÓN DEL SISTEMA ELECTORAL MEXICANO  (7)
+  ══════════════════════════════════ */
+  { sa:"1.1", sal:"Evolución del sistema electoral",
+    ref:"Woldenberg (2012). Historia mínima de la transición democrática en México.",
+    p:"México vivió durante décadas bajo un sistema de partido hegemónico. La transición democrática fue gradual y se consolidó a través de una serie de reformas electorales.", pt:"Transición democrática en México",
+    q:"Según Woldenberg, ¿cuál fue la característica central del proceso de transición democrática en México que lo distingue de otras transiciones latinoamericanas?",
+    o:["Fue una transición abrupta producto de una revolución popular en 1988.",
+       "Fue una transición gradual, negociada y pactada que se realizó mediante reformas electorales sucesivas sin ruptura del orden constitucional.",
+       "Fue impuesta desde el exterior por organismos internacionales como la OEA."],
+    c:1,
+    ex:"Woldenberg destaca que la transición mexicana se caracterizó por ser gradual e incremental: a diferencia de otras transiciones por colapso o ruptura, en México los cambios se negociaron y pactaron entre las fuerzas políticas, materializándose en reformas electorales sucesivas que ampliaron paulatinamente la competencia y la pluralidad." },
+
+  { sa:"1.1", sal:"Evolución del sistema electoral",
+    ref:"Carpizo, Jorge (2019). La reforma política mexicana de 1977.",
+    p:null, pt:null,
+    q:"¿Cuál fue la aportación fundamental de la reforma política de 1977 (LOPPE) para el sistema electoral mexicano?",
+    o:["Creó el Instituto Federal Electoral y le otorgó autonomía del Ejecutivo.",
+       "Introdujo el principio de representación proporcional en la Cámara de Diputados y dio reconocimiento legal a los partidos políticos como entidades de interés público.",
+       "Estableció la elección directa del Presidente de la República por primera vez."],
+    c:1,
+    ex:"Carpizo señala que la reforma de 1977 (Ley de Organizaciones y Procedimientos Electorales) fue el punto de arranque de la liberalización política: incorporó la representación proporcional en la Cámara de Diputados, otorgó registro legal a partidos de oposición y reconoció a los partidos como entidades de interés público, pluralizando el Congreso." },
+
+  { sa:"1.1", sal:"Evolución del sistema electoral",
+    ref:"Woldenberg (2012); Cámara de Diputados, Reforma 1996.",
+    p:"La reforma electoral de 1996 es considerada la más trascendente del proceso de transición. Entre sus logros destaca la ciudadanización del IFE.", pt:"Reforma electoral de 1996",
+    q:"¿Por qué la reforma electoral de 1996 es considerada el punto de quiebre definitivo en la transición democrática mexicana?",
+    o:["Porque eliminó a todos los partidos de oposición y unificó el sistema político.",
+       "Porque por primera vez el Ejecutivo Federal perdió el control sobre el organismo electoral al ciudadanizarse completamente el Consejo General del IFE, lo que garantizó imparcialidad en la organización de elecciones.",
+       "Porque redujo el número de partidos políticos para simplificar el sistema electoral."],
+    c:1,
+    ex:"La reforma de 1996 fue determinante porque el Ejecutivo dejó de tener representación en el Consejo General del IFE, que quedó integrado exclusivamente por consejeros ciudadanos designados por la Cámara de Diputados. Esto garantizó la imparcialidad del árbitro electoral y es el hito que marca el fin del sistema de partido hegemónico." },
+
+  { sa:"1.1", sal:"Evolución del sistema electoral",
+    ref:"Woldenberg (2012); DOF, Reforma constitucional 2007-2008.",
+    p:null, pt:null,
+    q:"¿Cuál fue el propósito central de la reforma electoral de 2007-2008 que modificó el Art. 41 y 99 de la CPEUM?",
+    o:["Crear el TEPJF como tribunal electoral autónomo del Poder Judicial.",
+       "Reducir la influencia del dinero y los medios de comunicación en las campañas electorales, prohibiendo la compra de tiempos en radio y televisión por partidos o candidatos.",
+       "Introducir la reelección consecutiva de legisladores federales."],
+    c:1,
+    ex:"La reforma de 2007-2008 buscó fortalecer la equidad en la competencia electoral: prohibió a partidos y candidatos contratar publicidad en radio y TV por su cuenta, centralizó el acceso a medios a través del IFE con tiempos oficiales gratuitos, y creó la Unidad de Fiscalización y el sistema de monitoreo de medios." },
+
+  { sa:"1.1", sal:"Evolución del sistema electoral",
+    ref:"CPEUM (2025), Art. 41; DOF 10/02/2014 — Reforma política-electoral.",
+    p:"La reforma político-electoral de 2014 transformó al IFE en el INE y rediseñó las relaciones entre autoridades electorales federales y locales.", pt:"Reforma 2014: del IFE al INE",
+    q:"Además del cambio de nombre, ¿qué nueva atribución sustantiva adquirió el INE respecto del IFE con la reforma de 2014?",
+    o:["El INE puede designar y remover a los consejeros de los Organismos Públicos Locales Electorales (OPLEs) y, en ciertos supuestos, asumir la organización de elecciones locales.",
+       "El INE puede emitir leyes electorales para las entidades federativas.",
+       "El INE puede destituir a gobernadores y presidentes municipales por irregularidades electorales."],
+    c:0,
+    ex:"La reforma de 2014 dotó al INE de atribuciones de coordinación nacional: puede designar, ratificar y remover a los consejeros de los OPLEs, atraer y asumir la organización de procesos electorales locales en casos excepcionales, y fiscalizar a los partidos a nivel nacional y local, consolidando un modelo electoral de dos niveles articulados." },
+
+  { sa:"1.1", sal:"Evolución del sistema electoral",
+    ref:"Woldenberg (2012); INE (2020). Informe País 2020.",
+    p:null, pt:null,
+    q:"¿Cómo describe el Informe País 2020 del INE el estado de la democracia mexicana al inicio de la tercera década del siglo XXI?",
+    o:["Como una democracia consolidada sin retos pendientes de representación ni participación.",
+       "Como una democracia en proceso de maduración que enfrenta desafíos en dimensiones como la representación efectiva, la participación ciudadana, la confianza institucional y la reducción de desigualdades.",
+       "Como un sistema autoritario que nunca logró la transición democrática plena."],
+    c:1,
+    ex:"El Informe País 2020 del INE identifica logros democráticos importantes (pluralismo, alternancia) pero señala déficits persistentes en dimensiones como la participación ciudadana, la confianza en instituciones, la equidad socioeconómica y la calidad representativa. Reconoce que la democracia mexicana enfrenta retos de consolidación." },
+
+  { sa:"1.1", sal:"Evolución del sistema electoral",
+    ref:"Woldenberg (2012); Crespo, Cuad. Divulgación N°5, INE (2020).",
+    p:null, pt:null,
+    q:"Según Crespo, ¿cuál es la relación entre la celebración de elecciones competitivas y el desarrollo de la democracia?",
+    o:["Las elecciones son suficientes por sí solas para garantizar la plena democracia de un país.",
+       "Las elecciones son una condición necesaria pero no suficiente para la democracia: deben ser libres, justas y competitivas, y complementarse con otros elementos como el Estado de derecho, derechos civiles y participación ciudadana.",
+       "Las elecciones son irrelevantes para la democracia; lo que importa es la eficiencia gubernamental."],
+    c:1,
+    ex:"Crespo plantea que las elecciones son el mecanismo central de la democracia representativa para que los ciudadanos decidan quién los gobierna. Sin embargo, para que sean democráticas deben ser libres, competitivas y justas; y la democracia plena requiere además garantías de derechos, Estado de derecho y participación activa más allá del voto." },
+
+  /* ══════════════════════════════════
+     1.2  SISTEMAS POLÍTICOS  (3)
+  ══════════════════════════════════ */
+  { sa:"1.2", sal:"Sistemas políticos",
+    ref:"Espinoza (2020). Cuaderno de Divulgación N°20 — Sistemas parlamentario, presidencial y semipresidencial. INE.",
+    p:"Los sistemas de gobierno democráticos se clasifican principalmente en presidencial, parlamentario y semipresidencial, según la distribución del poder ejecutivo y su relación con el legislativo.", pt:"Tipos de sistemas de gobierno",
+    q:"Conforme a Espinoza, ¿cuál es la diferencia fundamental entre el sistema presidencial y el parlamentario respecto a la relación ejecutivo-legislativo?",
+    o:["En el presidencial el ejecutivo depende de la confianza del legislativo para mantenerse en el poder; en el parlamentario no.",
+       "En el presidencial el ejecutivo (presidente) tiene mandato fijo y legitimidad propia del voto directo, independiente del legislativo; en el parlamentario el ejecutivo (primer ministro) surge del legislativo y depende de su confianza para gobernar.",
+       "En ambos sistemas el ejecutivo y el legislativo son interdependientes de la misma manera."],
+    c:1,
+    ex:"Espinoza señala la distinción clave: en el presidencialismo existe separación rígida de poderes, con un ejecutivo unipersonal electo directamente por la ciudadanía y con mandato fijo; en el parlamentarismo el gobierno emerge de la mayoría legislativa y puede ser removido por una moción de censura, lo que genera mayor interdependencia entre poderes." },
+
+  { sa:"1.2", sal:"Sistemas políticos",
+    ref:"Espinoza (2020). Cuaderno de Divulgación N°20, INE.",
+    p:null, pt:null,
+    q:"¿Cuáles son las características principales del sistema semipresidencial, según Espinoza, que lo distinguen del presidencialismo puro?",
+    o:["El sistema semipresidencial tiene un ejecutivo bicéfalo: un presidente con legitimidad electoral directa y un primer ministro responsable ante el parlamento, coexistiendo ambos con competencias ejecutivas.",
+       "Es igual al presidencialismo, solo que el presidente se elige cada seis años en lugar de cuatro.",
+       "En el semipresidencialismo el poder ejecutivo lo ejerce exclusivamente el parlamento."],
+    c:0,
+    ex:"El sistema semipresidencial (Francia es el modelo clásico) combina elementos: tiene un presidente elegido directamente con atribuciones ejecutivas importantes, y un primer ministro nombrado por el presidente pero responsable ante el parlamento. Esta dualidad genera una cohabitación cuando el presidente y la mayoría parlamentaria son de distintos partidos." },
+
+  { sa:"1.2", sal:"Sistemas políticos",
+    ref:"Valdés Zurita (2020). Cuaderno de Divulgación N°7 — Sistemas electorales y de partidos. INE.",
+    p:"Los sistemas electorales son el conjunto de reglas que convierten votos en escaños o cargos. Determinan cómo se traduce la voluntad popular en representación política.", pt:"Sistemas electorales y de partidos",
+    q:"Según Valdés Zurita, ¿cuál es la diferencia principal entre un sistema electoral de mayoría relativa y uno de representación proporcional?",
+    o:["En la mayoría relativa gana el candidato con más votos aunque no tenga mayoría absoluta, favoreciendo gobiernos más estables pero menos representativos de minorías; en la representación proporcional los escaños se distribuyen en función del porcentaje de votos obtenido, favoreciendo la pluralidad.",
+       "La representación proporcional siempre produce gobiernos de un solo partido.",
+       "La mayoría relativa garantiza que todos los votos tengan el mismo peso en la distribución de escaños."],
+    c:0,
+    ex:"Valdés Zurita explica: la mayoría relativa convierte en ganador absoluto al candidato más votado, lo que tiende a producir bipartidismo y gobiernos más estables pero subrepresenta a minorías; la representación proporcional distribuye escaños según el porcentaje de votos, favoreciendo el multipartidismo y la pluralidad pero pudiendo dificultar la formación de mayorías." },
+
+  /* ══════════════════════════════════
+     1.3  TIPOS Y PRINCIPIOS DE DEMOCRACIA  (6)
+  ══════════════════════════════════ */
+  { sa:"1.3", sal:"Tipos y principios de democracia",
+    ref:"Salazar & Woldenberg (2020). Cuaderno de Divulgación N°1 — Principios y valores de la democracia. INE.",
+    p:"La democracia no es solo un mecanismo de toma de decisiones, sino también un conjunto de valores y principios que orientan la convivencia política.", pt:"Principios y valores democráticos",
+    q:"Según Salazar y Woldenberg, ¿cuáles son los principios fundamentales que sustentan la democracia como forma de gobierno y de vida?",
+    o:["La eficiencia económica, el orden público y la obediencia civil.",
+       "La libertad política, la igualdad ciudadana, la pluralidad, la tolerancia y el Estado de derecho como pilares que hacen posible la convivencia democrática.",
+       "La unanimidad en las decisiones colectivas y la eliminación de los conflictos sociales."],
+    c:1,
+    ex:"Salazar y Woldenberg desarrollan que la democracia descansa en principios como la libertad (para elegir y ser elegido), la igualdad política de los ciudadanos, el reconocimiento del pluralismo y la diferencia, la tolerancia y el sometimiento del poder al derecho (Estado de derecho). Estos principios hacen de la democracia no solo un sistema de gobierno sino una forma de vida." },
+
+  { sa:"1.3", sal:"Tipos y principios de democracia",
+    ref:"Silva-Herzog (2020). Cuaderno de Divulgación N°9 — Esferas de la democracia. INE.",
+    p:null, pt:null,
+    q:"¿Qué distingue Silva-Herzog al hablar de las 'esferas de la democracia'?",
+    o:["Que la democracia solo funciona en el ámbito electoral y carece de relevancia en otros espacios sociales.",
+       "Que la democracia se despliega en múltiples dimensiones: electoral (quién gobierna), liberal (derechos y libertades), participativa (intervención ciudadana) y social (condiciones materiales), y que su fortalecimiento requiere avanzar en todas ellas.",
+       "Que las esferas de la democracia son geográficas: federal, estatal y municipal."],
+    c:1,
+    ex:"Silva-Herzog plantea que la democracia no se agota en las elecciones. Identifica varias esferas o dimensiones: la electoral-procedimental, la liberal (protección de derechos), la participativa (más allá del voto) y la social (igualdad de condiciones). El avance democrático depende del desarrollo equilibrado de todas estas esferas." },
+
+  { sa:"1.3", sal:"Tipos y principios de democracia",
+    ref:"Prud'homme (2020). Cuaderno de Divulgación N°15 — Consulta popular y democracia directa. INE.",
+    p:"La democracia directa comprende mecanismos que permiten a la ciudadanía participar en decisiones de gobierno sin intermediarios. En México existen tres instrumentos constitucionales de democracia directa.", pt:"Democracia directa en México",
+    q:"¿Cuáles son los tres mecanismos de democracia directa reconocidos por la Constitución mexicana y qué diferencia a cada uno?",
+    o:["Referéndum, plebiscito y revocación de mandato — el referéndum consulta sobre leyes, el plebiscito sobre actos de gobierno, y la revocación evalúa el desempeño del presidente.",
+       "La consulta popular, la iniciativa ciudadana y la revocación de mandato — la consulta popular somete temas de trascendencia nacional a votación, la iniciativa ciudadana permite a los ciudadanos proponer leyes, y la revocación permite decidir si continúa o no el Presidente en el cargo.",
+       "El plebiscito, la asamblea comunitaria y el voto electrónico."],
+    c:1,
+    ex:"Prud'homme explica que la CPEUM reconoce tres instrumentos de democracia directa: la consulta popular (Art. 35, fracc. VIII) que somete temas de trascendencia nacional a votación; la iniciativa ciudadana (Art. 71, fracc. IV) que permite a ciudadanos proponer legislación; y la revocación de mandato presidencial (Art. 35, fracc. IX) que evalúa la continuidad del Ejecutivo." },
+
+  { sa:"1.3", sal:"Tipos y principios de democracia",
+    ref:"Salazar & Woldenberg (2020). Cuad. 1 INE; Loaeza (2020). Cuad. 11 INE.",
+    p:null, pt:null,
+    q:"Según Loaeza, ¿qué función cumple la oposición política en un sistema democrático?",
+    o:["La oposición es un obstáculo para el buen gobierno y debe minimizarse mediante mecanismos de consenso obligatorio.",
+       "La oposición es un elemento constitutivo e indispensable de la democracia: fiscaliza al gobierno, representa a los que no ganaron y garantiza el pluralismo político; sin oposición reconocida y protegida no hay democracia.",
+       "La función de la oposición es únicamente participar en elecciones sin intervenir en las decisiones legislativas."],
+    c:1,
+    ex:"Loaeza desarrolla que la oposición es consustancial a la democracia: cumple funciones de control y fiscalización del poder (función de contrapeso), representa a los sectores que no obtuvieron la mayoría (función representativa) y es la alternativa de gobierno futura. Sin oposición protegida y reconocida, el sistema político no puede ser considerado democrático." },
+
+  { sa:"1.3", sal:"Tipos y principios de democracia",
+    ref:"Salazar & Woldenberg (2020). Cuad. 1; ENCUCI INEGI (2021).",
+    p:"La Encuesta Nacional de Cultura Cívica (ENCUCI) 2020 mide actitudes, valores y prácticas democráticas de la ciudadanía mexicana.", pt:"Cultura cívica y democracia",
+    q:"¿Qué mide la ENCUCI y por qué es relevante para evaluar el estado de la democracia en México?",
+    o:["Mide exclusivamente la participación electoral (nivel de asistencia a las urnas).",
+       "Mide las actitudes, conocimientos, valores y prácticas de la ciudadanía en materia cívica y democrática (tolerancia, confianza institucional, participación, identidad), lo que permite diagnosticar la cultura política y los obstáculos a la consolidación democrática.",
+       "Es un censo de autoridades electorales a nivel nacional."],
+    c:1,
+    ex:"La ENCUCI (INEGI, 2021) es una herramienta de diagnóstico de la cultura política ciudadana: mide el grado de conocimiento de derechos y obligaciones, la confianza en instituciones, la disposición a la tolerancia y el respeto a la diferencia, y los niveles y formas de participación. Sus resultados permiten identificar qué ciudadanía tiene México y qué falta para consolidar la democracia." },
+
+  { sa:"1.3", sal:"Tipos y principios de democracia",
+    ref:"Salazar & Woldenberg (2020). Cuad. 1 INE; Silva-Herzog (2020). Cuad. 9 INE.",
+    p:null, pt:null,
+    q:"¿Qué distingue a la democracia representativa de la democracia directa como formas de ejercicio del poder popular?",
+    o:["En la democracia representativa los ciudadanos gobiernan directamente sin intermediarios; en la directa eligen representantes.",
+       "En la democracia representativa los ciudadanos delegan el ejercicio del poder en representantes electos que actúan en su nombre; en la democracia directa los propios ciudadanos toman las decisiones colectivas sin intermediarios.",
+       "No existe diferencia real entre ambos modelos en la práctica contemporánea."],
+    c:1,
+    ex:"La distinción es conceptual y práctica: la democracia representativa (dominante en los estados modernos) opera mediante la elección periódica de representantes que toman decisiones por la ciudadanía; la democracia directa implica que los ciudadanos deciden directamente sobre asuntos públicos. Los sistemas modernos combinan ambas, integrando mecanismos de participación directa dentro de marcos representativos." },
+
+  /* ══════════════════════════════════
+     1.4  CULTURA DEMOCRÁTICA  (6)
+  ══════════════════════════════════ */
+  { sa:"1.4", sal:"Cultura democrática",
+    ref:"Cisneros (2020). Cuaderno de Divulgación N°10 — Tolerancia y democracia. INE.",
+    p:null, pt:null,
+    q:"Según Cisneros, ¿por qué la tolerancia es una condición indispensable para la vida democrática?",
+    o:["La tolerancia es prescindible en democracia; lo que importa es la mayoría.",
+       "La tolerancia es una condición sine qua non de la democracia porque implica reconocer el derecho de los demás a pensar, creer y vivir de forma diferente, lo que hace posible la convivencia plural y evita que las mayorías impongan uniformidad a las minorías.",
+       "La tolerancia solo aplica entre partidos políticos, no entre ciudadanos."],
+    c:1,
+    ex:"Cisneros argumenta que la tolerancia —entendida como el reconocimiento activo del derecho a la diferencia— es un valor fundamental sin el cual la democracia se convierte en tiranía de la mayoría. Una sociedad democrática debe garantizar que las minorías puedan vivir según sus convicciones, lo que requiere ciudadanos y gobiernos tolerantes." },
+
+  { sa:"1.4", sal:"Cultura democrática",
+    ref:"INEGI (2021). Encuesta Nacional de Cultura Cívica (ENCUCI) 2020.",
+    p:"La ENCUCI 2020 reveló datos relevantes sobre los niveles de confianza institucional y participación cívica de los mexicanos.", pt:"Hallazgos ENCUCI 2020",
+    q:"¿Qué tipo de datos recaba la ENCUCI sobre la cultura política de los mexicanos y cómo se relacionan con la democracia?",
+    o:["Solo recaba datos económicos para correlacionar ingreso y participación electoral.",
+       "Recaba datos sobre conocimiento de derechos, confianza institucional, tolerancia, identidad nacional y formas de participación ciudadana, revelando el perfil de la cultura política y los activos y déficits ciudadanos para la vida democrática.",
+       "Únicamente registra la asistencia a las urnas en cada proceso electoral."],
+    c:1,
+    ex:"La ENCUCI es la principal fuente de diagnóstico de la cultura política en México. Recaba información sobre: conocimiento de derechos y obligaciones ciudadanas, niveles de confianza en instituciones políticas, actitudes hacia la tolerancia y la diversidad, formas de participación y sentido de eficacia política. Sus resultados permiten identificar los pilares y las debilidades de la cultura democrática mexicana." },
+
+  { sa:"1.4", sal:"Cultura democrática",
+    ref:"INE (2020). Informe País 2020: el curso de la democracia. PNUD-INE.",
+    p:null, pt:null,
+    q:"¿Qué dimensiones evalúa el Informe País 2020 del INE para medir la calidad democrática en México?",
+    o:["Solo evalúa el desempeño del sistema electoral en términos de participación votante.",
+       "Evalúa múltiples dimensiones: ciudadanía activa, Estado de derecho, representación política, rendición de cuentas, libertades civiles y condiciones materiales de vida, ofreciendo un diagnóstico integral del estado de la democracia.",
+       "Evalúa exclusivamente la percepción de los partidos políticos sobre el sistema electoral."],
+    c:1,
+    ex:"El Informe País 2020 adopta un enfoque multidimensional para evaluar la democracia: analiza el ejercicio de los derechos ciudadanos, el funcionamiento del Estado de derecho, la calidad de la representación política, los mecanismos de rendición de cuentas, las libertades fundamentales y las condiciones socioeconómicas, reconociendo que la democracia requiere tanto procedimientos como condiciones sustantivas." },
+
+  { sa:"1.4", sal:"Cultura democrática",
+    ref:"Salazar & Woldenberg (2020). Cuad. 1 INE; Cisneros (2020). Cuad. 10 INE.",
+    p:null, pt:null,
+    q:"¿Qué se entiende por 'cultura democrática' y en qué se diferencia del simple conocimiento de las reglas electorales?",
+    o:["La cultura democrática es sinónimo de conocimiento de la legislación electoral; basta saber las reglas para tener cultura democrática.",
+       "La cultura democrática implica la interiorización de valores (tolerancia, respeto, diálogo, solidaridad) y prácticas cívicas que van más allá del conocimiento de reglas: se trata de una disposición cotidiana a vivir la democracia como forma de convivencia, no solo como procedimiento electoral.",
+       "La cultura democrática es patrimonio exclusivo de los funcionarios electorales y los políticos profesionales."],
+    c:1,
+    ex:"La cultura democrática trasciende el conocimiento normativo: implica que los ciudadanos han internalizado valores como el respeto al diferente, la solución pacífica de conflictos, el reconocimiento de la legitimidad del adversario y la responsabilidad cívica. Es, en palabras de Cisneros y Salazar-Woldenberg, una 'forma de vida' que se practica en los ámbitos cotidianos." },
+
+  { sa:"1.4", sal:"Cultura democrática",
+    ref:"Salazar & Woldenberg (2020). Cuad. 1 INE.",
+    p:null, pt:null,
+    q:"¿Cuál es el papel de la educación cívica para el fortalecimiento de la cultura democrática según los autores del Cuaderno de Divulgación N°1?",
+    o:["La educación cívica no tiene impacto demostrable sobre los valores y comportamientos democráticos.",
+       "La educación cívica es un instrumento fundamental para transmitir, renovar y fortalecer los valores democráticos en cada generación; sin ciudadanos informados y comprometidos, las instituciones democráticas se debilitan.",
+       "La educación cívica solo es relevante para los niños en edad escolar, no para los adultos."],
+    c:1,
+    ex:"Salazar y Woldenberg subrayan que la democracia no se sostiene solo con instituciones y leyes: requiere ciudadanos que la valoren y practiquen. La educación cívica formal e informal es el vehículo para transmitir los principios democráticos a las nuevas generaciones y renovar el compromiso democrático en la sociedad, haciendo más sólidas las instituciones." },
+
+  { sa:"1.4", sal:"Cultura democrática",
+    ref:"INE (2020). Informe País 2020; ENCUCI INEGI (2021).",
+    p:null, pt:null,
+    q:"¿Cuál es la importancia de la confianza institucional para el funcionamiento de la democracia según el Informe País 2020?",
+    o:["La confianza en las instituciones es irrelevante siempre que los procedimientos electorales sean técnicamente correctos.",
+       "La confianza institucional es un pilar de la democracia: cuando los ciudadanos confían en las instituciones (autoridades electorales, partidos, poder judicial), aumenta su disposición a participar, aceptar resultados y resolver conflictos pacíficamente por cauces institucionales.",
+       "La alta desconfianza institucional fortalece la democracia al mantener a los gobernantes en constante vigilancia."],
+    c:1,
+    ex:"El Informe País 2020 señala que la confianza institucional es uno de los indicadores críticos de la salud democrática. Sin ella, la ciudadanía pierde disposición a participar, a aceptar resultados adversos y a resolver conflictos por vías pacíficas e institucionales, lo que incrementa la polarización y amenaza la estabilidad democrática." },
+
+  /* ══════════════════════════════════
+     2.1  MODELO CONSTITUCIONAL  (6)
+  ══════════════════════════════════ */
+  { sa:"2.1", sal:"Modelo constitucional",
+    ref:"CPEUM (2025), Arts. 39, 40 y 41.",
+    p:"La Constitución establece la forma de Estado y de gobierno de México, incluyendo el principio de soberanía popular, la forma republicana y federal, y las bases de la organización política.", pt:"Forma de Estado y soberanía",
+    q:"¿Qué establecen los Arts. 39, 40 y 41 de la CPEUM sobre la soberanía, la forma de gobierno y el sistema político mexicano?",
+    o:["El Art. 39 reconoce que la soberanía reside en el pueblo; el Art. 40 define que México es una república representativa, democrática, laica y federal; el Art. 41 establece que el pueblo ejerce su soberanía a través de los poderes de la Unión y de los poderes de los estados.",
+       "Los tres artículos se refieren únicamente a las facultades del Congreso de la Unión.",
+       "El Art. 39 es la única fuente de legitimidad del presidente; el Art. 40 regula los partidos políticos."],
+    c:0,
+    ex:"El Art. 39 consagra la soberanía popular originaria; el Art. 40 fija la forma de gobierno (república representativa, democrática, laica y federal); y el Art. 41 establece que el pueblo ejerce su soberanía a través de los poderes de la Unión (en materias federales) y de los poderes de cada estado (en lo local), y que la renovación de poderes se realiza mediante elecciones libres, auténticas y periódicas." },
+
+  { sa:"2.1", sal:"Modelo constitucional",
+    ref:"CPEUM (2025), Art. 41, Bases I–V.",
+    p:"El Art. 41 CPEUM establece las bases del sistema electoral: el papel de los partidos, las reglas del financiamiento, el acceso a medios, la organización electoral y el sistema de justicia electoral.", pt:"Bases del Art. 41 CPEUM",
+    q:"¿Cuáles son las cinco Bases del Art. 41 CPEUM y qué regula cada una?",
+    o:["Base I: partidos políticos; Base II: financiamiento; Base III: acceso a medios; Base IV: organización electoral (INE); Base V: sistema de medios de impugnación.",
+       "Las cinco bases regulan exclusivamente el financiamiento de los partidos políticos.",
+       "El Art. 41 solo tiene tres bases y no regula los medios de comunicación."],
+    c:0,
+    ex:"El Art. 41 CPEUM estructura el sistema político-electoral en cinco bases: Base I (partidos políticos y su rol), Base II (financiamiento público y privado de partidos), Base III (acceso a radio y televisión), Base IV (organización electoral a cargo del INE) y Base V (tribunal electoral y medios de impugnación). Es el artículo central del sistema electoral mexicano." },
+
+  { sa:"2.1", sal:"Modelo constitucional",
+    ref:"CPEUM (2025), Arts. 52 y 56.",
+    p:null, pt:null,
+    q:"¿Cuál es la integración de la Cámara de Diputados y del Senado conforme a la CPEUM, y qué principios de representación aplican en cada una?",
+    o:["La Cámara de Diputados tiene 300 diputados electos por mayoría relativa y 200 por representación proporcional (500 en total); el Senado tiene 128 senadores: 2 por entidad por mayoría, 1 de primera minoría y 32 por lista nacional de representación proporcional.",
+       "Ambas cámaras se integran exclusivamente por el principio de mayoría relativa.",
+       "La Cámara de Diputados tiene 400 miembros y el Senado tiene 100."],
+    c:0,
+    ex:"Art. 52: la Cámara de Diputados se integra por 500 diputados — 300 uninominales por mayoría relativa y 200 plurinominales por representación proporcional. Art. 56: el Senado tiene 128 senadores — 64 electos por mayoría relativa (2 por entidad), 32 de primera minoría y 32 por lista nacional de RP." },
+
+  { sa:"2.1", sal:"Modelo constitucional",
+    ref:"Ugalde Calderón (2010). Órganos constitucionales autónomos. Revista del IJ Federal.",
+    p:null, pt:null,
+    q:"Según Ugalde Calderón, ¿qué son los órganos constitucionales autónomos y cuál es su importancia para el sistema democrático?",
+    o:["Son organismos creados por decreto presidencial para apoyar al Ejecutivo en tareas técnicas.",
+       "Son entes del Estado creados por la Constitución que no se adscriben a ninguno de los tres poderes tradicionales, dotados de autonomía técnica, financiera y de gestión, cuya finalidad es ejercer funciones estatales especializadas con independencia e imparcialidad, como el INE, el Banco de México o la CNDH.",
+       "Son dependencias de la Suprema Corte de Justicia encargadas de la vigilancia de la constitucionalidad."],
+    c:1,
+    ex:"Ugalde Calderón explica que los órganos constitucionales autónomos surgieron para sacar determinadas funciones del ámbito de los poderes tradicionales y ejercerlas con imparcialidad técnica. Se crean directamente en la Constitución, tienen personalidad jurídica y patrimonio propios, y su diseño busca alejarlos de la influencia política directa. El INE es el ejemplo paradigmático en materia electoral." },
+
+  { sa:"2.1", sal:"Modelo constitucional",
+    ref:"CPEUM (2025), Art. 1°; Salazar Ugarte (2014). La reforma constitucional sobre derechos humanos.",
+    p:"La reforma constitucional de 2011 en materia de derechos humanos transformó el paradigma constitucional mexicano al incorporar el principio pro persona y el bloque de constitucionalidad.", pt:"Reforma de derechos humanos 2011",
+    q:"¿Cuál fue el cambio más trascendente que introdujo la reforma constitucional de 2011 al Art. 1° de la CPEUM en materia de derechos humanos?",
+    o:["Redujo el catálogo de derechos para simplificar la Constitución.",
+       "Amplió el parámetro de protección al incorporar los derechos reconocidos en tratados internacionales de los que México es parte y al establecer el principio pro persona, que obliga a las autoridades a aplicar siempre la norma más protectora de la persona.",
+       "Limitó los derechos humanos a los ciudadanos mexicanos, excluyendo a los extranjeros."],
+    c:1,
+    ex:"Salazar Ugarte señala que la reforma de 2011 al Art. 1° CPEUM fue revolucionaria: cambió 'garantías individuales' por 'derechos humanos', amplió la fuente normativa al incluir los tratados internacionales, introdujo el principio pro persona (interpretar siempre en favor de la persona) y estableció los principios de universalidad, interdependencia, indivisibilidad y progresividad de los derechos." },
+
+  { sa:"2.1", sal:"Modelo constitucional",
+    ref:"CNDH (2016). Principios de universalidad, interdependencia, indivisibilidad y progresividad.",
+    p:null, pt:null,
+    q:"¿Qué significa el principio de 'progresividad' de los derechos humanos conforme a la CNDH?",
+    o:["Que los derechos humanos pueden restringirse progresivamente cuando el Estado lo requiera.",
+       "Que el Estado tiene la obligación de ampliar gradual y constantemente el ámbito de protección de los derechos humanos, sin permitir retrocesos (efecto de no regresividad), avanzando siempre hacia su plena realización.",
+       "Que la progresividad aplica solo a los derechos económicos, no a los civiles y políticos."],
+    c:1,
+    ex:"La CNDH explica que la progresividad implica dos obligaciones estatales: una positiva (adoptar medidas progresivas para ampliar el goce de los derechos) y una prohibición de regresividad (no disminuir el nivel de protección ya alcanzado). Este principio es especialmente relevante en derechos económicos, sociales y culturales, pero aplica a todos los derechos humanos." },
+
+  /* ══════════════════════════════════
+     2.2  LEYES Y NORMAS ELECTORALES  (7)
+  ══════════════════════════════════ */
+  { sa:"2.2", sal:"Leyes y normas electorales",
+    ref:"LGIPE (2024), Arts. 1–10.",
+    p:"La Ley General de Instituciones y Procedimientos Electorales (LGIPE) es la ley reglamentaria del Art. 41 CPEUM y regula el sistema electoral mexicano.", pt:"Objeto y ámbito de la LGIPE",
+    q:"¿Cuál es el objeto principal de la LGIPE y a qué materias electorales regula?",
+    o:["La LGIPE regula exclusivamente las elecciones presidenciales, no las legislativas ni las locales.",
+       "La LGIPE regula la organización de las elecciones federales, las funciones del INE, los derechos y obligaciones de los partidos políticos, los derechos político-electorales de los ciudadanos y los procesos electorales locales en coordinación con los OPLEs.",
+       "La LGIPE es una ley estatal que aplica solo en el Distrito Federal."],
+    c:1,
+    ex:"La LGIPE es la ley marco del sistema electoral mexicano: establece las bases de organización del INE y su relación con los OPLEs, regula el proceso electoral federal (registro, campaña, votación, cómputos, resultados), los derechos ciudadanos de votar y ser votado, y el Servicio Profesional Electoral Nacional, entre otras materias." },
+
+  { sa:"2.2", sal:"Leyes y normas electorales",
+    ref:"CPEUM (2025), Art. 41, Base II; LGIPE (2024), Arts. 50–55.",
+    p:"El financiamiento público de los partidos políticos en México se calcula con base en el padrón electoral y se distribuye según reglas constitucionales específicas.", pt:"Financiamiento de partidos",
+    q:"¿Cómo se determina el monto del financiamiento público ordinario para los partidos políticos conforme al Art. 41, Base II CPEUM?",
+    o:["Se asigna un monto fijo igual para todos los partidos, independientemente de sus resultados electorales.",
+       "Se calcula multiplicando el 65% del salario mínimo diario vigente en la Ciudad de México por el número de ciudadanos inscritos en el padrón electoral, y se distribuye: 30% igualitario entre todos los partidos y 70% proporcional a los votos obtenidos en la última elección de diputados.",
+       "El monto es determinado anualmente por la Cámara de Diputados mediante decreto."],
+    c:1,
+    ex:"El Art. 41, Base II CPEUM fija la fórmula: financiamiento ordinario = 65% del SMG del DF × padrón electoral. La distribución es: 30% igualitario (mismo monto para todos los partidos) y 70% proporcional a los votos recibidos en la última elección de diputados federales. Esto combina equidad (30%) con reconocimiento del peso electoral (70%)." },
+
+  { sa:"2.2", sal:"Leyes y normas electorales",
+    ref:"CPEUM (2025), Art. 41, Base III; LGIPE (2024).",
+    p:null, pt:null,
+    q:"¿Qué prohíbe el Art. 41, Base III, Apartado A de la CPEUM respecto del acceso de partidos y candidatos a la radio y televisión?",
+    o:["Prohíbe a los partidos usar la radio y televisión en cualquier circunstancia.",
+       "Prohíbe a los partidos, precandidatos, candidatos y cualquier persona física o moral contratar o adquirir, por sí o por terceros, tiempos en radio y televisión con fines electorales. Solo el INE puede administrar el tiempo electoral en estos medios.",
+       "Solo prohíbe el uso de televisión de paga durante las campañas."],
+    c:1,
+    ex:"El Apartado A de la Base III del Art. 41 CPEUM establece la prohibición absoluta de que los partidos, candidatos, personas físicas o morales contraten tiempos en radio y TV con propósitos electorales. El INE administra los tiempos oficiales del Estado en estos medios y los distribuye entre los partidos, garantizando equidad en el acceso sin que el dinero determine la presencia mediática." },
+
+  { sa:"2.2", sal:"Leyes y normas electorales",
+    ref:"LGIPE (2024), Arts. 209–232.",
+    p:null, pt:null,
+    q:"¿En qué etapas se divide el proceso electoral federal conforme a la LGIPE y cuándo inicia?",
+    o:["Inicia el 8 de septiembre del año previo a la elección y se divide en: preparación, jornada electoral y resultados y declaraciones de validez.",
+       "Inicia el primer domingo de septiembre del año previo a la elección con la aprobación de la convocatoria y concluye con la resolución de impugnaciones por el TEPJF.",
+       "El proceso solo dura los 90 días de campaña."],
+    c:0,
+    ex:"La LGIPE establece que el proceso electoral ordinario inicia el 8 de septiembre del año previo y comprende cuatro etapas: 1) preparación (registros, aprobación de materiales, etc.), 2) jornada electoral, 3) resultados y declaraciones de validez de las elecciones, y 4) dictamen y declaraciones de validez. La primera y cuarta etapa son las que encuadran los procesos de impugnación." },
+
+  { sa:"2.2", sal:"Leyes y normas electorales",
+    ref:"CPEUM (2025), Art. 35, fracc. II; LGIPE (2024), Arts. 10–38.",
+    p:null, pt:null,
+    q:"¿Cuáles son los requisitos constitucionales para ser registrado como candidato a diputado federal de mayoría relativa?",
+    o:["Ser ciudadano mexicano por nacimiento, tener 21 años cumplidos al día de la elección, ser originario del distrito donde se postula o vecino de él con 6 meses de residencia, y no desempeñar cargo de dirección en partido político.",
+       "Únicamente se requiere ser ciudadano mexicano mayor de 18 años.",
+       "Ser ciudadano mexicano por nacimiento, tener 21 años, ser originario del estado o tener 6 meses de residencia en él, y no estar suspendido en sus derechos político-electorales."],
+    c:2,
+    ex:"El Art. 55 CPEUM (aplicable a diputados) exige: ciudadanía mexicana por nacimiento, 21 años cumplidos al día de la elección, ser originario del estado o tener 6 meses de residencia efectiva, no ser ministro de culto religioso, no estar en servicio activo en el Ejército ni ser secretario de Estado sin separarse 90 días antes, y no estar suspendido en derechos político-electorales." },
+
+  { sa:"2.2", sal:"Leyes y normas electorales",
+    ref:"LGIPE (2024), Arts. 251–255.",
+    p:null, pt:null,
+    q:"¿Qué es el PREP (Programa de Resultados Electorales Preliminares) y cuál es su naturaleza jurídica?",
+    o:["Es el resultado oficial y definitivo de las elecciones federales que determina al ganador.",
+       "Es un instrumento informativo de carácter estadístico que captura y publica los resultados asentados en las actas de las casillas conforme van llegando al distrito; sus datos no tienen carácter definitivo y no constituyen cómputo oficial.",
+       "Es el sistema que sustituye a los cómputos distritales cuando hay diferencia menor al 1% entre candidatos."],
+    c:1,
+    ex:"El PREP es un mecanismo de información ciudadana, no de cómputo oficial. Muestra los resultados capturados de las actas conforme llegan la noche de la jornada, permitiendo a la ciudadanía y a los partidos tener una tendencia preliminar. Los resultados oficiales son los cómputos distritales que realizan los Consejos Distritales del INE en la semana posterior a la jornada." },
+
+  { sa:"2.2", sal:"Leyes y normas electorales",
+    ref:"CPEUM (2025), Art. 41; LGIPE (2024), Arts. 260–275.",
+    p:null, pt:null,
+    q:"¿Qué condiciones deben cumplirse para que un partido político pierda su registro ante el INE?",
+    o:["Perder cualquier elección federal en dos procesos consecutivos.",
+       "No obtener al menos el 3% de la votación válida emitida en la elección de diputados federales por el principio de representación proporcional, entre otras causas como no participar en una elección o disolverse voluntariamente.",
+       "Tener menos de 500 afiliados en el padrón electoral."],
+    c:1,
+    ex:"El Art. 41 CPEUM y la LGIPE establecen que un partido pierde su registro si no obtiene el 3% de la votación válida emitida en cualquier elección federal ordinaria para diputados por RP. También pierde el registro si no participa en un proceso electoral, si se fusiona con otro partido, o si se disuelve voluntariamente. El umbral del 3% asegura que los partidos tengan respaldo ciudadano mínimo." },
+
+  /* ══════════════════════════════════
+     2.3  ATRIBUCIONES DE LOS OPLEs  (5)
+  ══════════════════════════════════ */
+  { sa:"2.3", sal:"Atribuciones de los OPLEs",
+    ref:"CPEUM (2025), Art. 116, fracc. IV; LGIPE (2024), Arts. 98–117.",
+    p:"Los Organismos Públicos Locales Electorales (OPLEs) son las autoridades electorales administrativas de cada entidad federativa. Organizan las elecciones locales en coordinación con el INE.", pt:"Naturaleza jurídica de los OPLEs",
+    q:"¿Cuál es la naturaleza jurídica de los OPLEs y cómo se relacionan con el INE?",
+    o:["Los OPLEs son órganos del INE sin autonomía propia.",
+       "Los OPLEs son organismos públicos locales con autonomía de gestión, encargados de organizar las elecciones de sus entidades federativas, pero sujetos a la coordinación y supervisión del INE, que puede designar y remover a sus consejeros y, en casos excepcionales, asumir sus funciones.",
+       "Los OPLEs son independientes del INE y no tienen ninguna relación con él."],
+    c:1,
+    ex:"El Art. 116, fracc. IV CPEUM y la LGIPE establecen que los OPLEs son autoridades electorales locales con autonomía técnica y de gestión, pero articuladas en un sistema nacional coordinado por el INE. El INE designa a sus consejeros (con participación de la ciudadanía local) y puede asumir sus funciones cuando se generen condiciones que lo justifiquen, como conflictos graves o falta de imparcialidad." },
+
+  { sa:"2.3", sal:"Atribuciones de los OPLEs",
+    ref:"LGIPE (2024), Arts. 98–102.",
+    p:null, pt:null,
+    q:"¿Cuáles son las principales atribuciones de los OPLEs en la organización de los procesos electorales locales?",
+    o:["Organizar las elecciones de presidente de la república cuando el INE lo delegue.",
+       "Organizar, desarrollar y vigilar los procesos electorales de su entidad; capacitar a los ciudadanos que participen como funcionarios de casilla; elaborar el padrón local; diseñar los documentos y materiales electorales; y garantizar el financiamiento de los partidos locales.",
+       "Los OPLEs solo tienen funciones de vigilancia pero no organizan elecciones."],
+    c:1,
+    ex:"Los OPLEs tienen atribuciones propias de organización electoral local: diseñan y ejecutan el proceso electoral de su entidad, organizan la jornada electoral local, capacitan a funcionarios de casilla, establecen circunscripciones y distritos locales, garantizan el financiamiento de partidos locales y aplican las normas electorales de su estado, siempre en coordinación con el INE." },
+
+  { sa:"2.3", sal:"Atribuciones de los OPLEs",
+    ref:"LGIPE (2024), Art. 32, fracc. XIV; Arts. 116–121.",
+    p:"La LGIPE establece los supuestos en los que el INE puede asumir las funciones de los OPLEs, lo que se denomina 'atracción' o 'asunción' de funciones.", pt:"Atracción y asunción de funciones por el INE",
+    q:"¿En qué consiste la figura de 'asunción de funciones' del INE respecto de un OPLE y cuándo procede?",
+    o:["Es el proceso permanente mediante el cual el INE supervisa el trabajo de los OPLEs.",
+       "Es la facultad del INE para asumir directamente la organización de un proceso electoral local cuando existan circunstancias graves que afecten la paz pública o la certeza del proceso, o cuando el OPLE no garantice las condiciones necesarias para el desarrollo de las elecciones.",
+       "Es la obligación del INE de organizar todas las elecciones locales coincidentes con las federales."],
+    c:1,
+    ex:"La asunción de funciones (Art. 32, fracc. XIV LGIPE) permite al INE tomar el control de la organización de un proceso electoral local ante circunstancias extraordinarias: conflictos graves que pongan en riesgo la paz pública, situaciones que hagan imposible al OPLE cumplir sus funciones, o cuando se acredite falta de condiciones de imparcialidad. Es una medida de último recurso, no la regla." },
+
+  { sa:"2.3", sal:"Atribuciones de los OPLEs",
+    ref:"CPEUM (2025), Art. 116, fracc. IV, inciso c); LGIPE (2024).",
+    p:null, pt:null,
+    q:"¿Qué principios constitucionales deben regir el ejercicio de las funciones de los OPLEs conforme al Art. 116, fracc. IV CPEUM?",
+    o:["Eficiencia, rapidez y economía presupuestal.",
+       "Certeza, imparcialidad, independencia, legalidad, máxima publicidad y objetividad.",
+       "Transparencia, rendición de cuentas y eficiencia administrativa."],
+    c:1,
+    ex:"El Art. 116, fracc. IV CPEUM establece que las autoridades electorales locales (OPLEs y tribunales electorales locales) deben regirse por los principios de certeza (los actos son predecibles y verificables), imparcialidad (no privilegiar a nadie), independencia (no subordinación), legalidad (apego a la ley), máxima publicidad y objetividad. Son los mismos principios que rigen al INE a nivel federal." },
+
+  { sa:"2.3", sal:"Atribuciones de los OPLEs",
+    ref:"LGIPE (2024), Arts. 98–117; Instituto Nacional Electoral (s/f). Conteo rápido.",
+    p:null, pt:null,
+    q:"¿Los OPLEs pueden realizar conteos rápidos en sus elecciones locales y cómo se relacionan con el conteo rápido del INE?",
+    o:["Solo el INE puede realizar conteos rápidos; los OPLEs no tienen esta atribución.",
+       "Los OPLEs pueden, en el ámbito de sus facultades, desarrollar instrumentos de información preliminar para sus elecciones locales, incluyendo mecanismos similares al conteo rápido, siempre en coordinación con el INE y conforme a los lineamientos aplicables.",
+       "Los conteos rápidos son ilegales en México y ninguna autoridad electoral los puede realizar."],
+    c:1,
+    ex:"El INE diseñó y aplica el conteo rápido (muestra probabilística que proyecta resultados la noche de la jornada) para las elecciones federales. Los OPLEs pueden desarrollar instrumentos similares para sus elecciones locales, en el marco de sus atribuciones y en coordinación con el INE, que provee los lineamientos metodológicos para garantizar su rigor estadístico." }
+];
+
+/* ═══════════════════════════════════════
+   ESTADO GLOBAL
+═══════════════════════════════════════ */
+const TIME_LIMIT = 50 * 60;
+let answers, revealed, current, timerInterval, secondsLeft;
+
+/* Shuffle Fisher-Yates */
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+const SS = {
+  "1.1":{bg:"#e8eaf6",color:"#3949ab",icon:"📜"},
+  "1.2":{bg:"#fce4ec",color:"#c2185b",icon:"🏛️"},
+  "1.3":{bg:"#e0f2f1",color:"#00796b",icon:"🗳️"},
+  "1.4":{bg:"#fff3e0",color:"#e65100",icon:"🤝"},
+  "2.1":{bg:"#f3e5f5",color:"#7b1fa2",icon:"📋"},
+  "2.2":{bg:"#e1f5fe",color:"#0277bd",icon:"⚖️"},
+  "2.3":{bg:"#e8f5e9",color:"#2e7d32",icon:"🏢"}
+};
+
+/* ═══════════════════════════════════════
+   INICIO — orden aleatorio cada sesión
+═══════════════════════════════════════ */
+function startExam(){
+  const byArea = {};
+  QBANK.forEach(q => { if(!byArea[q.sa]) byArea[q.sa]=[]; byArea[q.sa].push(q); });
+  Object.keys(byArea).forEach(k => byArea[k] = shuffle(byArea[k]));
+  Q = [
+    ...byArea["1.1"],...byArea["1.2"],...byArea["1.3"],...byArea["1.4"],
+    ...byArea["2.1"],...byArea["2.2"],...byArea["2.3"]
+  ];
+  answers  = new Array(Q.length).fill(null);
+  revealed = new Array(Q.length).fill(false);
+  current  = 0;
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('examScreen').classList.remove('hidden');
+  document.getElementById('navBar').classList.remove('hidden');
+  renderQuestion(0);
+  startTimer();
+}
+
+/* ═══════════════════════════════════════
+   RENDER
+═══════════════════════════════════════ */
+function renderQuestion(idx){
+  current = idx;
+  const q = Q[idx], sc = SS[q.sa]||{bg:"#f3e5f5",color:"#6a1b9a",icon:"📌"};
+  const isR = revealed[idx], sel = answers[idx];
+
+  let ph = '';
+  if(q.p) ph = `<div class="passage"><div class="passage-label">📄 ${q.pt}</div>${q.p.replace(/\n/g,'<br>')}</div>`;
+
+  const L = ['A','B','C'];
+  const opts = q.o.map((o,i) => {
+    let cls = 'option', icon = '';
+    if(isR){
+      cls += ' disabled';
+      if(i === q.c){ cls += ' correct'; icon = '<div class="opt-result-icon">✅</div>'; }
+      else if(i === sel && i !== q.c){ cls += ' incorrect'; icon = '<div class="opt-result-icon">❌</div>'; }
+    } else if(i === sel) cls += ' selected';
+    return `<div class="${cls}" onclick="sel(${idx},${i})">
+      <div class="opt-letter-col"><div class="opt-letter">${L[i]}</div></div>
+      <div class="opt-text">${o}</div>${icon}
+    </div>`;
+  }).join('');
+
+  const ri = isR ? (sel===q.c ? '✅ Correcto' : sel===null ? '⏭️ Sin responder' : '❌ Incorrecto') : '';
+
+  window.scrollTo({top:0,behavior:'instant'});
+  document.getElementById('examScreen').innerHTML = `
+    <div class="question-card">
+      <div class="q-header" style="flex-wrap:wrap;gap:5px">
+        <div class="q-num-label">Preg. ${idx+1}/${Q.length}</div>
+        <div class="q-area-badge">${sc.icon} ${q.sal}</div>
+      </div>
+      <div class="q-body">
+        ${ph}
+        <div class="question-text">${q.q}</div>
+        <div class="options">${opts}</div>
+        <div class="biblio-ref">📚 ${q.ref}</div>
+      </div>
+      <div class="explanation ${isR?'show':''}">
+        <strong>${ri}${ri?' — ':''}Explicación:</strong> ${q.ex}
+      </div>
+    </div>
+    ${!isR && answers[idx]!==null
+      ? `<div class="ver-sol-wrap"><button class="btn-ver-sol" onclick="rev(${idx})">Ver explicación 💡</button></div>`
+      : ''}
+  `;
+  document.getElementById('progressBar').style.width = ((idx+1)/Q.length*100)+'%';
+  document.getElementById('navCurrent').textContent = idx+1;
+  document.getElementById('navTotal').textContent   = Q.length;
+  document.getElementById('btnPrev').disabled = idx===0;
+  document.getElementById('btnNext').textContent = idx===Q.length-1 ? '🏁 Finalizar' : 'Sig. →';
+}
+
+function sel(qi,oi){ if(revealed[qi]) return; answers[qi]=oi; renderQuestion(qi); }
+function rev(idx){ revealed[idx]=true; renderQuestion(idx); }
+function nextQ(){ if(current<Q.length-1) renderQuestion(current+1); else showResults(); }
+function prevQ(){ if(current>0) renderQuestion(current-1); }
+
+/* ═══════════════════════════════════════
+   TIMER
+═══════════════════════════════════════ */
+function startTimer(){
+  secondsLeft = TIME_LIMIT;
+  timerInterval = setInterval(()=>{
+    secondsLeft--;
+    const m = Math.floor(secondsLeft/60).toString().padStart(2,'0');
+    const s = (secondsLeft%60).toString().padStart(2,'0');
+    const el = document.getElementById('timer');
+    el.textContent = `${m}:${s}`;
+    el.className = 'timer'+(secondsLeft<300?' danger':secondsLeft<600?' warning':'');
+    if(secondsLeft<=0){ clearInterval(timerInterval); showResults(); }
+  },1000);
+}
+
+/* ═══════════════════════════════════════
+   RESULTADOS
+═══════════════════════════════════════ */
+function showResults(){
+  clearInterval(timerInterval);
+  document.getElementById('examScreen').classList.add('hidden');
+  document.getElementById('navBar').classList.add('hidden');
+
+  const total    = Q.length;
+  const answered = answers.filter(a=>a!==null).length;
+  const correct  = answers.filter((a,i)=>a===Q[i].c).length;
+  const wrong    = answered - correct;
+  const skipped  = total - answered;
+  const pct      = Math.round(correct/total*100);
+
+  const areas = {
+    "Histórico Conceptual": {total:0,correct:0},
+    "Teórico Normativo":    {total:0,correct:0}
+  };
+  const areaMap = {
+    "1.1":"Histórico Conceptual","1.2":"Histórico Conceptual",
+    "1.3":"Histórico Conceptual","1.4":"Histórico Conceptual",
+    "2.1":"Teórico Normativo","2.2":"Teórico Normativo",
+    "2.3":"Teórico Normativo"
+  };
+
+  const subs = {};
+  Q.forEach((q,i)=>{
+    const area = areaMap[q.sa];
+    areas[area].total++;
+    if(answers[i]===q.c) areas[area].correct++;
+    if(!subs[q.sa]) subs[q.sa]={label:q.sal,total:0,correct:0};
+    subs[q.sa].total++;
+    if(answers[i]===q.c) subs[q.sa].correct++;
+  });
+
+  const weak = Object.entries(subs).filter(([,s])=>s.correct/s.total<0.6).map(([,s])=>s.label);
+  const cc   = pct>=70?'score-good':pct>=50?'score-mid':'score-low';
+  const msg  = pct>=80 ? '¡Excelente! Dominas el módulo político-electoral.'
+             : pct>=60 ? 'Buen avance. Refuerza los temas señalados.'
+             : 'Diagnóstico listo. Enfócate en los temas marcados esta semana.';
+
+  const rows = Object.entries(areas).map(([name,a])=>{
+    const p  = Math.round(a.correct/a.total*100);
+    const icon = p>=80?'✅':p>=60?'⚠️':'❌';
+    const bc = p>=60 ? 'linear-gradient(90deg,#6a1b9a,#ab47bc)' : 'linear-gradient(90deg,#c62828,#ef5350)';
+    return `<div class="area-row">
+      <div class="area-name">${icon} ${name}</div>
+      <div class="area-bar-wrap"><div class="area-bar" style="width:${p}%;background:${bc}"></div></div>
+      <div class="area-pct" style="color:${p>=60?'#6a1b9a':'#c62828'}">${p}%</div>
+    </div>`;
+  }).join('');
+
+  const wb = weak.length
+    ? `<div class="weak-banner"><h4>🎯 Estudia esto primero:</h4><p>Menos del 60% en estas subáreas. Priorízalas esta semana.</p><div class="weak-tags">${weak.map(t=>`<span class="weak-tag">📌 ${t}</span>`).join('')}</div></div>`
+    : `<div style="background:#e8f5e9;border-radius:10px;padding:14px;margin:14px 0;color:#2e7d32;font-weight:600">✅ ¡Dominas todas las áreas!</div>`;
+
+  const tu = TIME_LIMIT-secondsLeft, tm = Math.floor(tu/60), ts = tu%60;
+
+  document.getElementById('resultsScreen').innerHTML = `
+    <div class="results-screen">
+      <div style="background:#f3e5f5;border-radius:10px;padding:9px 14px;margin-bottom:18px;font-size:0.82rem;color:#6a1b9a;font-weight:600">
+        📋 DIAGNÓSTICO CONOCIMIENTOS POLÍTICO-ELECTORALES — ${new Date().toLocaleDateString('es-MX')}
+      </div>
+      <div class="score-circle ${cc}">${pct}%<div class="score-sub">${correct}/${total}</div></div>
+      <h2 style="margin-bottom:8px">${msg}</h2>
+      <p style="margin-bottom:20px;color:#777;font-size:.85rem">Tiempo: ${tm}m ${ts}s · Respondidas: ${answered}/${total}</p>
+      <div class="stats-grid">
+        <div class="stat-card stat-correct"><div class="n">${correct}</div><div class="l">✅ Correctas</div></div>
+        <div class="stat-card stat-wrong"><div class="n">${wrong}</div><div class="l">❌ Incorrectas</div></div>
+        <div class="stat-card stat-skip"><div class="n">${skipped}</div><div class="l">⏭️ Saltadas</div></div>
+      </div>
+      ${wb}
+      <div style="text-align:left;margin-bottom:24px">
+        <h3 style="font-size:0.9rem;font-weight:700;color:#444;margin-bottom:10px">Desempeño por área</h3>
+        ${rows}
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary btn-lg" onclick="reviewExam()">Revisar con explicaciones</button>
+        <button class="btn btn-secondary btn-lg" onclick="location.reload()">Reiniciar (nuevo orden) ⚡</button>
+      </div>
+      <div style="margin-top:18px;padding:10px 12px;background:#f9f5ff;border-radius:8px;font-size:0.69rem;color:#aaa;text-align:left;line-height:1.7;border-left:3px solid #ce93d8">
+        📚 <strong style="color:#9c27b0">Bibliografía:</strong>
+        Woldenberg (2012) · Carpizo (2019) · Espinoza, Cuad. 20 INE · Valdés Zurita, Cuad. 7 INE · Salazar &amp; Woldenberg, Cuad. 1 INE · Silva-Herzog, Cuad. 9 INE · Loaeza, Cuad. 11 INE · Prud'homme, Cuad. 15 INE · Cisneros, Cuad. 10 INE · Crespo, Cuad. 5 INE · INE (2020) Informe País · ENCUCI INEGI (2021) · CPEUM (2025) · LGIPE (2024) · Ugalde Calderón (2010) · Salazar Ugarte (2014) · CNDH (2016)
+      </div>
+    </div>
+  `;
+  document.getElementById('resultsScreen').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+function reviewExam(){
+  document.getElementById('resultsScreen').classList.add('hidden');
+  document.getElementById('examScreen').classList.remove('hidden');
+  document.getElementById('navBar').classList.remove('hidden');
+  revealed = revealed.map(()=>true);
+  renderQuestion(0);
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
